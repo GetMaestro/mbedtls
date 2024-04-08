@@ -1,91 +1,144 @@
-const std = @import("std");
+const srcs = &.{
+    "libs/mbedtls/library/aes.c",
+    "libs/mbedtls/library/aesni.c",
+    "libs/mbedtls/library/aesce.c",
+    "libs/mbedtls/library/aria.c",
+    "libs/mbedtls/library/asn1parse.c",
+    "libs/mbedtls/library/asn1write.c",
+    "libs/mbedtls/library/base64.c",
+    "libs/mbedtls/library/bignum.c",
+    "libs/mbedtls/library/bignum_core.c",
+    "libs/mbedtls/library/bignum_mod.c",
+    "libs/mbedtls/library/bignum_mod_raw.c",
+    "libs/mbedtls/library/camellia.c",
+    "libs/mbedtls/library/ccm.c",
+    "libs/mbedtls/library/chacha20.c",
+    "libs/mbedtls/library/chachapoly.c",
+    "libs/mbedtls/library/cipher.c",
+    "libs/mbedtls/library/cipher_wrap.c",
+    "libs/mbedtls/library/constant_time.c",
+    "libs/mbedtls/library/cmac.c",
+    "libs/mbedtls/library/ctr_drbg.c",
+    "libs/mbedtls/library/des.c",
+    "libs/mbedtls/library/dhm.c",
+    "libs/mbedtls/library/ecdh.c",
+    "libs/mbedtls/library/ecdsa.c",
+    "libs/mbedtls/library/ecjpake.c",
+    "libs/mbedtls/library/ecp.c",
+    "libs/mbedtls/library/ecp_curves.c",
+    "libs/mbedtls/library/entropy.c",
+    "libs/mbedtls/library/entropy_poll.c",
+    "libs/mbedtls/library/error.c",
+    "libs/mbedtls/library/gcm.c",
+    "libs/mbedtls/library/hkdf.c",
+    "libs/mbedtls/library/hmac_drbg.c",
+    "libs/mbedtls/library/lmots.c",
+    "libs/mbedtls/library/lms.c",
+    "libs/mbedtls/library/md.c",
+    "libs/mbedtls/library/md5.c",
+    "libs/mbedtls/library/memory_buffer_alloc.c",
+    "libs/mbedtls/library/nist_kw.c",
+    "libs/mbedtls/library/oid.c",
+    "libs/mbedtls/library/padlock.c",
+    "libs/mbedtls/library/pem.c",
+    "libs/mbedtls/library/pk.c",
+    "libs/mbedtls/library/pk_wrap.c",
+    "libs/mbedtls/library/pkcs12.c",
+    "libs/mbedtls/library/pkcs5.c",
+    "libs/mbedtls/library/pkparse.c",
+    "libs/mbedtls/library/pkwrite.c",
+    "libs/mbedtls/library/platform.c",
+    "libs/mbedtls/library/platform_util.c",
+    "libs/mbedtls/library/poly1305.c",
+    "libs/mbedtls/library/psa_crypto.c",
+    "libs/mbedtls/library/psa_crypto_aead.c",
+    "libs/mbedtls/library/psa_crypto_cipher.c",
+    "libs/mbedtls/library/psa_crypto_client.c",
+    "libs/mbedtls/library/psa_crypto_ffdh.c",
+    "libs/mbedtls/library/psa_crypto_driver_wrappers_no_static.c",
+    "libs/mbedtls/library/psa_crypto_ecp.c",
+    "libs/mbedtls/library/psa_crypto_hash.c",
+    "libs/mbedtls/library/psa_crypto_mac.c",
+    "libs/mbedtls/library/psa_crypto_pake.c",
+    "libs/mbedtls/library/psa_crypto_rsa.c",
+    "libs/mbedtls/library/psa_crypto_se.c",
+    "libs/mbedtls/library/psa_crypto_slot_management.c",
+    "libs/mbedtls/library/psa_crypto_storage.c",
+    "libs/mbedtls/library/psa_its_file.c",
+    "libs/mbedtls/library/psa_util.c",
+    "libs/mbedtls/library/ripemd160.c",
+    "libs/mbedtls/library/rsa.c",
+    "libs/mbedtls/library/rsa_alt_helpers.c",
+    "libs/mbedtls/library/sha1.c",
+    "libs/mbedtls/library/sha3.c",
+    "libs/mbedtls/library/sha256.c",
+    "libs/mbedtls/library/sha512.c",
+    "libs/mbedtls/library/threading.c",
+    "libs/mbedtls/library/timing.c",
+    "libs/mbedtls/library/version.c",
+    "libs/mbedtls/library/version_features.c",
+    "libs/mbedtls/library/pkcs7.c",
+    "libs/mbedtls/library/x509.c",
+    "libs/mbedtls/library/x509_create.c",
+    "libs/mbedtls/library/x509_crl.c",
+    "libs/mbedtls/library/x509_crt.c",
+    "libs/mbedtls/library/x509_csr.c",
+    "libs/mbedtls/library/x509write_crt.c",
+    "libs/mbedtls/library/x509write_csr.c",
+    "libs/mbedtls/library/debug.c",
+    "libs/mbedtls/library/mps_reader.c",
+    "libs/mbedtls/library/mps_trace.c",
+    "libs/mbedtls/library/net_sockets.c",
+    "libs/mbedtls/library/ssl_cache.c",
+    "libs/mbedtls/library/ssl_ciphersuites.c",
+    "libs/mbedtls/library/ssl_client.c",
+    "libs/mbedtls/library/ssl_cookie.c",
+    "libs/mbedtls/library/ssl_debug_helpers_generated.c",
+    "libs/mbedtls/library/ssl_msg.c",
+    "libs/mbedtls/library/ssl_ticket.c",
+    "libs/mbedtls/library/ssl_tls.c",
+    "libs/mbedtls/library/ssl_tls12_client.c",
+    "libs/mbedtls/library/ssl_tls12_server.c",
+    "libs/mbedtls/library/ssl_tls13_keys.c",
+    "libs/mbedtls/library/ssl_tls13_server.c",
+    "libs/mbedtls/library/ssl_tls13_client.c",
+    "libs/mbedtls/library/ssl_tls13_generic.c",
+};
 
-// Although this function looks imperative, note that its job is to
-// declaratively construct a build graph that will be executed by an external
-// runner.
 pub fn build(b: *std.Build) void {
-    // Standard target options allows the person running `zig build` to choose
-    // what target to build for. Here we do not override the defaults, which
-    // means any target is allowed, and the default is native. Other options
-    // for restricting supported target set are available.
     const target = b.standardTargetOptions(.{});
-
-    // Standard optimization options allow the person running `zig build` to select
-    // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall. Here we do not
-    // set a preferred release mode, allowing the user to decide how to optimize.
     const optimize = b.standardOptimizeOption(.{});
 
     const lib = b.addStaticLibrary(.{
         .name = "mbedtls",
-        // In this case the main source file is merely a path, however, in more
-        // complicated build scripts, this could be a generated file.
-        .root_source_file = .{ .path = "src/root.zig" },
+        .root_source_file = null,
         .target = target,
         .optimize = optimize,
     });
 
-    // This declares intent for the library to be installed into the standard
-    // location when the user invokes the "install" step (the default step when
-    // running `zig build`).
-    b.installArtifact(lib);
+    lib.addCSourceFiles(.{ .files = srcs, .flags = &.{"-std=c99"} });
+    lib.addIncludePath(.{ .path = "include" });
+    lib.addIncludePath(.{ .path = "library" });
+    lib.linkLibC();
+    lib.installHeadersDirectory("include/mbedtls", "mbedtls");
+    lib.installHeadersDirectory("include/psa", "psa");
 
-    const exe = b.addExecutable(.{
-        .name = "mbedtls",
-        .root_source_file = .{ .path = "src/main.zig" },
-        .target = target,
-        .optimize = optimize,
-    });
-
-    // This declares intent for the executable to be installed into the
-    // standard location when the user invokes the "install" step (the default
-    // step when running `zig build`).
-    b.installArtifact(exe);
-
-    // This *creates* a Run step in the build graph, to be executed when another
-    // step is evaluated that depends on it. The next line below will establish
-    // such a dependency.
-    const run_cmd = b.addRunArtifact(exe);
-
-    // By making the run step depend on the install step, it will be run from the
-    // installation directory rather than directly from within the cache directory.
-    // This is not necessary, however, if the application depends on other installed
-    // files, this ensures they will be present and in the expected location.
-    run_cmd.step.dependOn(b.getInstallStep());
-
-    // This allows the user to pass arguments to the application in the build
-    // command itself, like this: `zig build run -- arg1 arg2 etc`
-    if (b.args) |args| {
-        run_cmd.addArgs(args);
+    if (target.result.os.tag == .windows) {
+        lib.linkSystemLibrary("ws2_32");
     }
 
-    // This creates a build step. It will be visible in the `zig build --help` menu,
-    // and can be selected like this: `zig build run`
-    // This will evaluate the `run` step rather than the default, which is "install".
-    const run_step = b.step("run", "Run the app");
-    run_step.dependOn(&run_cmd.step);
+    // b.installArtifact(lib);
 
-    // Creates a step for unit testing. This only builds the test executable
-    // but does not run it.
-    const lib_unit_tests = b.addTest(.{
-        .root_source_file = .{ .path = "src/root.zig" },
-        .target = target,
-        .optimize = optimize,
-    });
+    // const lib_unit_tests = b.addTest(.{
+    //     .root_source_file = .{ .path = "src/root.zig" },
+    //     .target = target,
+    //     .optimize = optimize,
+    // });
 
-    const run_lib_unit_tests = b.addRunArtifact(lib_unit_tests);
+    // const run_lib_unit_tests = b.addRunArtifact(lib_unit_tests);
 
-    const exe_unit_tests = b.addTest(.{
-        .root_source_file = .{ .path = "src/main.zig" },
-        .target = target,
-        .optimize = optimize,
-    });
-
-    const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
-
-    // Similar to creating the run step earlier, this exposes a `test` step to
-    // the `zig build --help` menu, providing a way for the user to request
-    // running the unit tests.
-    const test_step = b.step("test", "Run unit tests");
-    test_step.dependOn(&run_lib_unit_tests.step);
-    test_step.dependOn(&run_exe_unit_tests.step);
+    // const test_step = b.step("test", "Run unit tests");
+    // test_step.dependOn(&run_lib_unit_tests.step);
 }
+
+const std = @import("std");
