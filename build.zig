@@ -126,6 +126,14 @@ pub fn build(b: *std.Build) void {
     if (target.result.os.tag == .windows) {
         lib.linkSystemLibrary("ws2_32");
     }
+
+    b.installArtifact(lib);
+
+    const module = b.addModule("mbedtls", .{
+        .root_source_file = null,
+    });
+
+    module.linkLibrary(lib);
 }
 
 const std = @import("std");
